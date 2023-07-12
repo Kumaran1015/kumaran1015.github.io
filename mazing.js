@@ -31,6 +31,17 @@ var Mazing = function(id) {
 
   this.utter = null;
 
+  this.swipedir = "";
+  this.startX = 0;
+  this.startY = 0;
+  this.distX = 0;
+  this.distY = 0;
+  this.threshold = 30;
+  this.restraint = 20;
+  this.allowedTime = 300;
+  this.elapsedTime = 0;
+  this.startTime = 0;
+
   for(i=0; i < this.mazeContainer.children.length; i++) {
     for(j=0; j < this.mazeContainer.children[i].children.length; j++) {
       var el =  this.mazeContainer.children[i].children[j];
@@ -57,7 +68,12 @@ var Mazing = function(id) {
   /* activate control keys */
 
   this.keyPressHandler = this.mazeKeyPressHandler.bind(this);
+  this.touchStartHandler = this.mazeTouchStartHandler.bind(this);
+  this.touchEndHandler = this.mazeTouchEndHandler.bind(this);
   document.addEventListener("keydown", this.keyPressHandler, false);
+  document.addEventListener("touchstart", this.touchStartHandler, false);
+  document.addEventListener("touchend", this.touchEndHandler, false);
+  document.addEventListener("touchmove", function(e) {e.preventDefault();}, false);
 };
 
 Mazing.prototype.enableSpeech = function() {
@@ -94,18 +110,22 @@ Mazing.prototype.heroTakeKey = function() {
   this.setMessage("you now have the key!");
 };
 
-Mazing.prototype.gameOver = function(text) {
+Mazing.prototype.gameOver = function(text, success = false) {
   /* de-activate control keys */
   document.removeEventListener("keydown", this.keyPressHandler, false);
   this.setMessage(text);
-  this.mazeContainer.classList.add("finished");
+  if (success) {
+    this.mazeContainer.classList.add("finished");
+  } else {
+    this.mazeContainer.classList.add("tryagain");
+  }
 };
 
 Mazing.prototype.heroWins = function() {
   this.mazeScore.classList.remove("has-key");
   this.maze[this.heroPos].classList.remove("door");
   this.heroScore += 50;
-  this.gameOver("you finished !!!");
+  this.gameOver("You got it!", true);
 };
 
 Mazing.prototype.tryMoveHero = function(pos) {
@@ -124,7 +144,7 @@ Mazing.prototype.tryMoveHero = function(pos) {
 
     if(!this.childMode && (this.heroScore <= 0)) {
       /* game over */
-      this.gameOver("sorry, you didn't make it.");
+      this.gameOver("sorry, try again!.");
     } else {
       this.setMessage("ow, that hurt!");
     }
@@ -140,7 +160,7 @@ Mazing.prototype.tryMoveHero = function(pos) {
     if(this.heroHasKey) {
       this.heroWins();
     } else {
-      this.setMessage("you need a key to unlock the door");
+      this.setMessage("Not so fast, you need a key to unlock the door :P");
       return;
     }
   }
@@ -216,6 +236,62 @@ Mazing.prototype.mazeKeyPressHandler = function(e) {
 
   e.preventDefault();
 };
+
+Mazing.prototype.handleSwipe = function(direction) {
+  var tryPos = new Position(this.heroPos.x, this.heroPos.y);
+
+  switch(direction)
+  {
+    case "left":
+      this.mazeContainer.classList.remove("face-right");
+      tryPos.y--;
+      break;
+
+    case "up":
+      tryPos.x--;
+      break;
+
+    case "right":
+      this.mazeContainer.classList.add("face-right");
+      tryPos.y++;
+      break;
+
+    case "down":
+      tryPos.x++;
+      break;
+
+    default:
+      return;
+  }
+  this.tryMoveHero(tryPos);
+}
+
+Mazing.prototype.mazeTouchStartHandler = function(e) {
+  var touchobj = e.changedTouches[0]
+  this.swipedir = 'none'
+  this.dist = 0
+  this.startX = touchobj.pageX
+  this.startY = touchobj.pageY
+  this.startTime = new Date().getTime() // record time when finger first makes contact with surface
+  e.preventDefault()
+}; 
+
+Mazing.prototype.mazeTouchEndHandler = function(e) {
+  var touchobj = e.changedTouches[0]
+  this.distX = touchobj.pageX - this.startX // get horizontal dist traveled by finger while in contact with surface
+  this.distY = touchobj.pageY - this.startY // get vertical dist traveled by finger while in contact with surface
+  this.elapsedTime = new Date().getTime() - this.startTime // get time elapsed
+  if (this.elapsedTime <= this.allowedTime){ // first condition for awipe met
+      if (Math.abs(this.distX) >= this.threshold && Math.abs(this.distY) <= this.restraint){ // 2nd condition for horizontal swipe met
+          this.swipedir = (this.distX < 0)? 'left' : 'right' // if dist traveled is negative, it indicates left swipe
+      }
+      else if (Math.abs(this.distY) >= this.threshold && Math.abs(this.distX) <= this.restraint){ // 2nd condition for vertical swipe met
+          this.swipedir = (this.distY < 0)? 'up' : 'down' // if dist traveled is negative, it indicates up swipe
+      }
+  }
+  this.handleSwipe(this.swipedir)
+  e.preventDefault()
+}; 
 
 Mazing.prototype.setChildMode = function() {
   this.childMode = true;

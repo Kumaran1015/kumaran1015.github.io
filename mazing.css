@@ -72,10 +72,10 @@
 }
 
 #maze div div:nth-child(odd) {
-  width: 1em;
+  width: 25px;
 }
 #maze div:nth-child(odd) div {
-  height: 1em;
+  height: 25px;
 }
 
 #maze.finished::after {
@@ -87,7 +87,27 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  content: "Game Over";
+  content: "It's a boy!";
+  background: rgba(0,0,0,0.4);
+  text-align: center;
+  text-transform: uppercase;
+  font-family: monospace;
+  font-size: 5em;
+  text-shadow: 2px 2px 2px rgba(0,0,0,0.8);
+  color: #fff;
+  z-index: 10;
+}
+
+#maze.tryagain::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  content: "Try Again";
   background: rgba(0,0,0,0.4);
   text-align: center;
   text-transform: uppercase;
