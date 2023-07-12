@@ -36,9 +36,9 @@ var Mazing = function(id) {
   this.startY = 0;
   this.distX = 0;
   this.distY = 0;
-  this.threshold = 30;
-  this.restraint = 20;
-  this.allowedTime = 300;
+  this.threshold = 20;
+  this.restraint = 10;
+  this.allowedTime = 1000;
   this.elapsedTime = 0;
   this.startTime = 0;
 
@@ -71,9 +71,9 @@ var Mazing = function(id) {
   this.touchStartHandler = this.mazeTouchStartHandler.bind(this);
   this.touchEndHandler = this.mazeTouchEndHandler.bind(this);
   document.addEventListener("keydown", this.keyPressHandler, false);
-  document.addEventListener("touchstart", this.touchStartHandler, false);
-  document.addEventListener("touchend", this.touchEndHandler, false);
-  document.addEventListener("touchmove", function(e) {e.preventDefault();}, false);
+  this.mazeContainer.addEventListener("touchstart", this.touchStartHandler, false);
+  this.mazeContainer.addEventListener("touchend", this.touchEndHandler, false);
+  this.mazeContainer.addEventListener("touchmove", function(e) {e.preventDefault();}, false);
 };
 
 Mazing.prototype.enableSpeech = function() {
@@ -282,10 +282,16 @@ Mazing.prototype.mazeTouchEndHandler = function(e) {
   this.distY = touchobj.pageY - this.startY // get vertical dist traveled by finger while in contact with surface
   this.elapsedTime = new Date().getTime() - this.startTime // get time elapsed
   if (this.elapsedTime <= this.allowedTime){ // first condition for awipe met
-      if (Math.abs(this.distX) >= this.threshold && Math.abs(this.distY) <= this.restraint){ // 2nd condition for horizontal swipe met
+      // if (Math.abs(this.distX) >= this.threshold && Math.abs(this.distY) <= this.restraint){ // 2nd condition for horizontal swipe met
+      //     this.swipedir = (this.distX < 0)? 'left' : 'right' // if dist traveled is negative, it indicates left swipe
+      // }
+      // else if (Math.abs(this.distY) >= this.threshold && Math.abs(this.distX) <= this.restraint){ // 2nd condition for vertical swipe met
+      //     this.swipedir = (this.distY < 0)? 'up' : 'down' // if dist traveled is negative, it indicates up swipe
+      // }
+      if (Math.abs(this.distX) >= Math.abs(this.distY)) { // 2nd condition for horizontal swipe met
           this.swipedir = (this.distX < 0)? 'left' : 'right' // if dist traveled is negative, it indicates left swipe
       }
-      else if (Math.abs(this.distY) >= this.threshold && Math.abs(this.distX) <= this.restraint){ // 2nd condition for vertical swipe met
+      else { 
           this.swipedir = (this.distY < 0)? 'up' : 'down' // if dist traveled is negative, it indicates up swipe
       }
   }
