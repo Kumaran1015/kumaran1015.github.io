@@ -14,8 +14,8 @@
 }
 #maze div div {
   position: relative;
-  width: 1em;
-  height: 1em;
+  width: 1.5em;
+  height: 1.5em;
 }
 #maze div div::after {
   position: absolute;
@@ -72,10 +72,10 @@
 }
 
 #maze div div:nth-child(odd) {
-  width: 25px;
+  width: 2em;
 }
 #maze div:nth-child(odd) div {
-  height: 25px;
+  height: 2em;
 }
 
 #maze.finished::after {
